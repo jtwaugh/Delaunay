@@ -30,7 +30,7 @@
 #define VERTS_NUM 999
 
 typedef std::vector<Edge*>					EdgeList;
-typedef std::vector<Vertex*>				PointsList;
+typedef std::vector<Vert*>					PointsList;
 typedef std::tuple<EdgeList, EdgeList>		EdgePartition;
 typedef std::tuple<PointsList, PointsList>	PointsPartition;
 
@@ -59,13 +59,13 @@ private:
 	EdgePartition							Triangulate(const PointsList& points);
 
 	void									Kill(Edge* edge);
-	void									GenerateRandomVerts();
+	void									GenerateRandomVerts(int n);
 
 public:
-	Delaunay(std::vector<QuadEdge*>& edges);
+	Delaunay(std::vector<QuadEdge*>& edges, int n);
 
-	static bool								LeftOf(Edge* e, Vertex* z)										{ return CCW(z, e->origin(), e->destination()); };
-	static bool								RightOf(Edge* e, Vertex* z)										{ return CCW(z, e->destination(), e->origin()); };
+	static bool								LeftOf(Edge* e, Vert* z)										{ return CCW(z, e->origin(), e->destination()); };
+	static bool								RightOf(Edge* e, Vert* z)										{ return CCW(z, e->destination(), e->origin()); };
 	static bool								Valid(Edge* e, Edge* base_edge)									{ return RightOf(base_edge, e->destination()); };
 
 	EdgeList								GetTriangulation();
@@ -75,13 +75,13 @@ public:
 //	Constructor
 //	--------------------------------------------------------
 
-Delaunay::Delaunay(std::vector<QuadEdge*>& edges) : edges_(edges)
+Delaunay::Delaunay(std::vector<QuadEdge*>& edges, int n) : edges_(edges)
 {
 	// For the moment, we generate the vertices
-	GenerateRandomVerts();
+	GenerateRandomVerts(n);
 }
 
-void Delaunay::GenerateRandomVerts()
+void Delaunay::GenerateRandomVerts(int n)
 {
 	// Generate a field of random vertices for debug/demonstration
 
@@ -89,7 +89,7 @@ void Delaunay::GenerateRandomVerts()
 
 	std::vector<std::vector<int>> buffer;
 
-	for (int i = 0; i < VERTS_NUM; i++)
+	for (int i = 0; i < n; i++)
 	{
 		std::vector<int> xy = { rand() % 512, rand() % 512 };
 		buffer.push_back(xy);
@@ -100,8 +100,7 @@ void Delaunay::GenerateRandomVerts()
 
 	for (int i = 0; i < buffer.size(); i++)
 	{
-		vertices_.push_back(new Vertex(buffer[i][0], buffer[i][1]));
-		std::cout << buffer[i][0] << ", " << buffer[i][1] << std::endl;
+		vertices_.push_back(new Vert(buffer[i][0], buffer[i][1]));
 	}
 }
 
@@ -144,11 +143,11 @@ Edge* Delaunay::MakeEdgeBetween(int a, int b, const PointsList& points)
 	// Create the QuadEdge and return the memory address of its 0th edge
 	Edge* e = Edge::Make(edges_);
 	
-	// Set it to originate from the vertex at index a
+	// Set it to originate from the Vert at index a
 	e->setOrigin(points[a]);
 
-	// Set its twin to originate from the vertex at index b
-	Vertex* points_b = points[b];
+	// Set its twin to originate from the Vert at index b
+	Vert* points_b = points[b];
 	e->setDestination(points_b);
 
 	// Return a pointer to our new edge

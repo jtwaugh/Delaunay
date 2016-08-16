@@ -70,7 +70,7 @@ double Det4x4(double* col_0, double* col_1, double* col_2, double* col_3)
 	return det;
 }
 
-bool InCircle(Vertex* a, Vertex* b, Vertex* c, Vertex* d)
+bool InCircle(Vert* a, Vert* b, Vert* c, Vert* d)
 {
 	// Returns true if d is in the circle circumscribing the triangle [abc]
 	// This reduces to a linear algebraic question; see Guibas and Stolfi
@@ -85,7 +85,7 @@ bool InCircle(Vertex* a, Vertex* b, Vertex* c, Vertex* d)
 	return Det4x4(m[0], m[1], m[2], m[3]) > 0;
 }
 
-bool CCW(Vertex* a, Vertex* b, Vertex* c)
+bool CCW(Vert* a, Vert* b, Vert* c)
 {
 	// Returns true if c lies above the line through a and b
 	// Bear in mind that this is mirrored when rendering because of SFML conventions

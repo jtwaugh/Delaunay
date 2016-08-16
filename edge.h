@@ -25,55 +25,68 @@ class Edge;
 class QuadEdge;
 
 //	--------------------------------------------------------
-//	The Vertex class
+//	The Vert class
 //	--------------------------------------------------------
 
 // This extends the SFML class, which, yes, costs some memory for computation
 // This is a nominal thing so I don't get a headache; I could rewrite the code to use just int tuples
 // (And probably should)
-class Vertex : public sf::Vertex
+class Vert //: public sf::Vertex
 {
 private:
 	Edge*												edge_;
+	int													x_;
+	int													y_;
 public:
-	Vertex(float x, float y);
+	//Vert(float x, float y);
+	Vert(int x, int y);
 
 	Edge*												edge()									{ return edge_; };
 	void												AddEdge(Edge* edge)						{ edge_ = edge; };
 
-	float												x()										{ return position.x; };
-	float												y()										{ return position.y; };
-	float												lengthsquared()							{ return position.x * position.x + position.y * position.y; };
+	//float												x()										{ return position.x; };
+	//float												y()										{ return position.y; };
+	//float												lengthsquared()							{ return position.x * position.x + position.y * position.y; };
 
-	sf::Vector2f										getPosition()							{ return position; };
+	int													x()										{ return x_; };
+	int													y()										{ return y_; };
+	int													lengthsquared()							{ return x_ * x_ + y_ * y_; };
+	
+	//sf::Vector2f										getPosition()							{ return position; };
 };
 
 //	--------------------------------------------------------
 //	Constructor
 //	--------------------------------------------------------
 
-Vertex::Vertex(float x, float y)
+/*
+Vert::Vert(float x, float y)
 {
 	position = sf::Vector2f(x, y);
 }
+*/
 
+Vert::Vert(int x, int y) : x_(x), y_(y)
+{
+
+}
 
 //	--------------------------------------------------------
 //	The Edge class
 //	--------------------------------------------------------
 
-// Notably this guy points to only one vertex and knows its own index and next edge about its origin vertex
+// Notably this guy points to only one Vert and knows its own index and next edge about its origin Vert
 class Edge
 {
 private:
-	Vertex*												origin_;
+	Vert*												origin_;
 	int													index_;
 	Edge*												next_;
 
 	friend QuadEdge;
 
 public:
-	Edge(Vertex* _origin);
+	Edge(Vert* _origin);
 	Edge();
 	~Edge();
 
@@ -100,13 +113,13 @@ public:
 
 	// Accessors and mutators
 
-	Vertex* origin()									{ return origin_; };
-	Vertex* destination()								{ return Sym()->origin(); };
+	Vert* origin()									{ return origin_; };
+	Vert* destination()								{ return Sym()->origin(); };
 		
 	void setNext(Edge* next)							{ next_ = next; };
 	void setIndex(int index)							{ index_ = index; };
-	void setOrigin(Vertex* org);
-	void setDestination(Vertex* dest);
+	void setOrigin(Vert* org);
+	void setDestination(Vert* dest);
 
 	// Uses raw pointer because it's returning the array member of a QuadEdge
 	static Edge* Make(std::vector<QuadEdge*>& list);
@@ -124,7 +137,7 @@ Edge::~Edge()
 {
 }
 
-Edge::Edge(Vertex* _origin) : origin_(_origin)
+Edge::Edge(Vert* _origin) : origin_(_origin)
 {
 }
 
@@ -147,14 +160,14 @@ Edge* Edge::Sym()
 	return (index_ < 2) ? (this + 2) : (this - 2);
 }
 
-void Edge::setOrigin(Vertex* origin)
+void Edge::setOrigin(Vert* origin)
 {
 	origin->AddEdge(this);
 	origin_ = origin;
 	draw = true;
 }
 
-void Edge::setDestination(Vertex* dest)
+void Edge::setDestination(Vert* dest)
 {
 	Edge* sym = Sym();
 	dest->AddEdge(sym);
