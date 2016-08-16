@@ -7,7 +7,8 @@ Yes, I used Visual Studio. You will have to include stdafx.h.
 
 # What is This?
 A Delaunay triangulation of a given set of points in the plane is the set of edge segments between these points such that, for every triangle formed by the edges, the circle circumscribing this triangle contains no vertices in its interior. This program generates random points at integer coordinates and finds the Delaunay triangulation to fit them.
-The specifics of the algorithm can be found in Guibas and Stolfi (1985), but I'll go over them here. The idea is to split the set of points in half recursively until we have a binary tree with terminal nodes of sets of two or three points. These are trivial to connect. Moving back up, we merge each pair together while respecting the no-vertices-in-circumcircle criterion. The algorithm uses a number of topological insights from Guibas and Stolfi and features an implementation of their QuadEdge data structure to make efficient the computation of edge adjacencies.
+
+The specifics of the algorithm can be found in Guibas and Stolfi (1985), but I'll go over them here. The idea of divide-and-conquer is to split the set of points in half recursively until we have a binary tree with terminal nodes of sets of two or three points. These are trivial to connect. Moving back up, we merge each pair together while respecting the no-vertices-in-circumcircle criterion. The algorithm features an implementation of their QuadEdge data structure to make efficient the computation of topological properties.
 
 # Running the Program
 
