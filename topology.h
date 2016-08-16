@@ -24,13 +24,12 @@
 #include <stdlib.h>
 
 //	--------------------------------------------------------
-//	Some typedefs and other definitions for readability
+//	Some typedefs for readability
 //	--------------------------------------------------------
-
-#define VERTS_NUM 999
 
 typedef std::vector<Edge*>					EdgeList;
 typedef std::vector<Vert*>					PointsList;
+typedef std::vector<QuadEdge*>				QuadList;
 typedef std::tuple<EdgeList, EdgeList>		EdgePartition;
 typedef std::tuple<PointsList, PointsList>	PointsPartition;
 
@@ -42,7 +41,7 @@ class Delaunay
 {
 private:
 	PointsList								vertices_;
-	std::vector<QuadEdge*>&					edges_;
+	QuadList								edges_;
 
 	Edge*									MakeEdgeBetween(int a, int b, const PointsList& points);
 	Edge*									Connect(Edge* a, Edge* b);
@@ -62,22 +61,19 @@ private:
 	void									GenerateRandomVerts(int n);
 
 public:
-	Delaunay(std::vector<QuadEdge*>& edges, int n);
+	Delaunay(int n);
 
-	static bool								LeftOf(Edge* e, Vert* z)										{ return CCW(z, e->origin(), e->destination()); };
-	static bool								RightOf(Edge* e, Vert* z)										{ return CCW(z, e->destination(), e->origin()); };
-	static bool								Valid(Edge* e, Edge* base_edge)									{ return RightOf(base_edge, e->destination()); };
-
-	EdgeList								GetTriangulation();
+	QuadList								GetTriangulation();
 };
 
 //	--------------------------------------------------------
 //	Constructor
 //	--------------------------------------------------------
 
-Delaunay::Delaunay(std::vector<QuadEdge*>& edges, int n) : edges_(edges)
+Delaunay::Delaunay(int n)
 {
 	// For the moment, we generate the vertices
+	edges_ = QuadList();
 	GenerateRandomVerts(n);
 }
 
@@ -367,14 +363,12 @@ EdgePartition Delaunay::Triangulate(const PointsList& points)
 	return EdgePartition({ left_outer }, { right_outer });
 }
 
-EdgeList Delaunay::GetTriangulation()
+QuadList Delaunay::GetTriangulation()
 {
+	// Wrapper for the triangulation function
+	// This should make it less confusing to call Triangulate with the right vertex list
 	EdgePartition tuple = Triangulate(vertices_);
-	EdgeList left = std::get<0>(tuple);
-	EdgeList right = std::get<1>(tuple);
-
-	left.insert(left.end(), right.begin(), right.end());
-	return left;
+	return edges_;
 }
 
 //	--------------------------------------------------------

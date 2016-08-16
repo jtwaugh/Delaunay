@@ -91,7 +91,7 @@ bool CCW(Vert* a, Vert* b, Vert* c)
 	// Bear in mind that this is mirrored when rendering because of SFML conventions
 	// This reduces to a linear algebraic question; see Guibas and Stolfi
 
-	// This might not be necessary
+	// This following bit might not be necessary
 	float a_x = a->x();
 	float a_y = a->y();
 	float b_x = b->x();
@@ -105,6 +105,24 @@ bool CCW(Vert* a, Vert* b, Vert* c)
 	// Return true if our determinant is positive
 	return Det3x3(m[0], m[1], m[2]) > 0;
 }
+
+bool LeftOf(Edge* e, Vert* z)
+{ 
+	// Return true if the point is left of the oriented line defined by the edge
+	return CCW(z, e->origin(), e->destination()); 
+};
+
+bool RightOf(Edge* e, Vert* z)
+{ 
+	// Return true if the point is right of the oriented line defined by the edge
+	return CCW(z, e->destination(), e->origin()); 
+};
+
+bool Valid(Edge* e, Edge* base_edge)
+{
+	// Return false if e ends beneath the base edge, which disqualifies it for candidacy when we zip the hulls
+	return RightOf(base_edge, e->destination()); 
+};
 
 //	--------------------------------------------------------
 

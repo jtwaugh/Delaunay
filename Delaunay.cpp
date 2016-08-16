@@ -29,13 +29,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	int n;
 	std::cin >> n;
 
-
 	auto t1 = std::chrono::high_resolution_clock::now();
-
-	std::vector<QuadEdge*> quads;
-	Delaunay test(quads, n);
-	EdgeList edges = test.GetTriangulation();
-
+	QuadList quads = Delaunay(n).GetTriangulation();
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Running time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << std::endl;
