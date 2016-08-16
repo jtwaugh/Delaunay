@@ -16,7 +16,7 @@ In its current state, the program requires SFML and also some way to compile it.
 
 # Intellectual Property Concerns
 
-As mentioned, the algorithm itself is given in Guibas and Stolfi's paper.
+As mentioned, the algorithm itself is given in Guibas and Stolfi's paper. The proper citation, I believe, is (Leonidas Guibas and Jorge Stolfi, Primitives for the manipulation of general subdivisions and the computation of Voronoi diagrams, ACM Transactions on Graphics, 4(2), 1985, 75-123).
 
 I feel obligated to mention that some of the code is taken/adapted from Paul Heckbert's course webpage here: http://www.cs.cmu.edu/afs/andrew/scs/cs/15-463/2001/pub/src/a2/quadedge.html. I can't find a license on the code anywhere, so please let me know if my project being on GitHub here in any way violates some terms I haven't seen yet.
 
