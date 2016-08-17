@@ -6,6 +6,8 @@
 #include <iostream>
 #include <chrono>
 
+bool DRAW_VORONOI = false;
+
 void DrawEdge(Edge* e, sf::RenderWindow& window)
 {
 	Edge* sym = e->Sym();
@@ -21,54 +23,25 @@ void DrawEdge(Edge* e, sf::RenderWindow& window)
 	window.draw(v);
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+void DrawVoronoi(Edge* e, sf::RenderWindow& window)
 {
-
-	// Get number of vertices to triangulate
-	std::cout << "Enter number of vertices to triangulate:" << std::endl;
-	int n;
-	std::cin >> n;
-
-	auto t1 = std::chrono::high_resolution_clock::now();
-	QuadList quads = Delaunay(n).GetTriangulation();
-	auto t2 = std::chrono::high_resolution_clock::now();
-
-	std::cout << "Running time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << std::endl;
-
-	// Time the algorithm
-	/*
-	for (int i = 1; i < 31; i++)
+	// Render the voronoi diagram as well
+	if (CCW(e[0].origin(), e[0].destination(), e[0].Onext()->destination())
+		&& CCW(e[0].origin(), e[0].Oprev()->destination(), e[0].destination()))
 	{
-		int ms[100];
+		sf::VertexArray v(sf::Lines, 2);
 
-		for (int t = 0; t < 100; t++)
-		{
-			auto t1 = std::chrono::high_resolution_clock::now();
+		v[0].position = Circumcenter(e[0].origin(), e[0].destination(), e[0].Oprev()->destination());
+		v[0].color = sf::Color::Green;
+		v[1].position = Circumcenter(e[0].origin(), e[0].destination(), e[0].Onext()->destination());
+		v[1].color = sf::Color::Green;
 
-			// Should wrap this up better
-			std::vector<QuadEdge*> quads;
-			Delaunay test(quads, i * 50);
-			EdgeList edges = test.GetTriangulation();
-
-			auto t2 = std::chrono::high_resolution_clock::now();
-
-			ms[t] = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-		}
-
-		int time = 0;
-
-		for (int t = 0; t < 100; t++)
-		{
-			time += ms[t];
-		}
-
-		double mean = ((double)time) / 100;
-
-		std::cout << "Vertices: " << i * 50 << ", mean triangulation time (ms): " << mean << std::endl;
+		window.draw(v);
 	}
-	*/
-	
-	
+}
+
+void Render(QuadList& quads)
+{
 	// Build the remdering environment
 	sf::RenderWindow window(sf::VideoMode(512, 512), "Delaunay Triangulator");
 
@@ -94,14 +67,38 @@ int _tmain(int argc, _TCHAR* argv[])
 			{
 				DrawEdge((*i)->edges, window);
 			}
-			if ((*i)->edges[1].draw)
+			if (DRAW_VORONOI)
 			{
-				DrawEdge((*i)->edges + 1, window);
-			}
+				DrawVoronoi((*i)->edges, window);
+			}	
 		}
 
 		window.display();
 	}
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+	// Get number of vertices to triangulate
+	std::cout << "Enter number of vertices to triangulate:" << std::endl;
+	int n;
+	std::cin >> n;
+	std::cout << "Draw Voronoi diagram as well?" << std::endl;
+	char yn;
+	std::cin >> yn;
+	if (yn == 'y' || yn == 'Y')
+	{
+		DRAW_VORONOI = true;
+	}
+
+	auto t1 = std::chrono::high_resolution_clock::now();
+	QuadList quads = Delaunay(n).GetTriangulation();
+	auto t2 = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Running time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << std::endl;
+
+	Render(quads);
 
 	return 0;
 }

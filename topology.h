@@ -16,7 +16,6 @@
 #include "linal.h"
 #include "quadedge.h"
 #include "math.h"
-#include <SFML/Graphics.hpp>
 #include <tuple>
 #include <vector>
 #include <iostream>
@@ -84,6 +83,11 @@ void Delaunay::GenerateRandomVerts(int n)
 	srand(time(NULL));
 
 	std::vector<std::vector<int>> buffer;
+
+	buffer.push_back({ 0, 0 });
+	buffer.push_back({ 512, 0 });
+	buffer.push_back({ 0, 512 });
+	buffer.push_back({ 512, 512 });
 
 	for (int i = 0; i < n; i++)
 	{

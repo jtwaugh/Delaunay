@@ -124,6 +124,16 @@ bool Valid(Edge* e, Edge* base_edge)
 	return RightOf(base_edge, e->destination()); 
 };
 
+sf::Vector2f Circumcenter(Vert* a, Vert* b, Vert* c)
+{
+	float d = 2 * (a->x() * (b->y() - c->y()) + b->x() * (c->y() - a->y()) + c->x() * (a->y() - b->y()));
+
+	float x = (float)(a->lengthsquared() * (b->y() - c->y()) + b->lengthsquared() * (c->y() - a->y()) + c->lengthsquared() * (a->y() - b->y())) / d;
+	float y = (float)(a->lengthsquared() * (c->x() - b->x()) + b->lengthsquared() * (a->x() - c->x()) + c->lengthsquared() * (b->x() - a->x())) / d;
+
+	return sf::Vector2f(x, y);
+}
+
 //	--------------------------------------------------------
 
 #endif
