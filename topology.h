@@ -21,6 +21,7 @@
 #include <iostream>
 #include <memory>
 #include <stdlib.h>
+#include <unordered_set>
 
 //	--------------------------------------------------------
 //	Some typedefs for readability
@@ -39,31 +40,46 @@ typedef std::tuple<PointsList, PointsList>	PointsPartition;
 class Delaunay
 {
 private:
+	// Components of the graph
 	PointsList								vertices_;
 	QuadList								edges_;
 
-	Edge*									MakeEdgeBetween(int a, int b, const PointsList& points);
-	Edge*									Connect(Edge* a, Edge* b);
+	// Helper to create a bunch of random vertices
+	void									GenerateRandomVerts(int n);
 
+	// Helper to cut the array of points in half
 	PointsPartition							SplitPoints(const PointsList& points);
 
+	// Functions that create or remove edges
+	Edge*									MakeEdgeBetween(int a, int b, const PointsList& points);
+	Edge*									Connect(Edge* a, Edge* b);
+	void									Kill(Edge* edge);
+
+	// Functions for generating primitive shapes that we'll merge together
+	EdgePartition							LinePrimitive(const PointsList& points);
+	EdgePartition							TrianglePrimitive(const PointsList& points);
+
+	// Refactored subroutines to make the big algorithm more readable
 	Edge*									LowestCommonTangent(Edge*& left_inner, Edge*& right_inner);
 	Edge*									LeftCandidate(Edge* base_edge);
 	Edge*									RightCandidate(Edge* base_edge);
 	void									MergeHulls(Edge*& base_edge);
 
-	EdgePartition							LinePrimitive(const PointsList& points);
-	EdgePartition							TrianglePrimitive(const PointsList& points);
+	// The main attraction
 	EdgePartition							Triangulate(const PointsList& points);
 
-	void									Kill(Edge* edge);
-	void									GenerateRandomVerts(int n);
-
 public:
+	// Constructor
 	Delaunay(int n);
 
+	// Triangulate the vertices
 	QuadList								GetTriangulation();
-	void									GetVoronoi();
+	
+	// Build the Voronoi diagram corresponding to the triangulation
+	QuadList								GetVoronoi();
+
+	// Build a minimum spanning tree across the vertices
+	EdgeList								GetMST();
 };
 
 //	--------------------------------------------------------
@@ -85,20 +101,18 @@ void Delaunay::GenerateRandomVerts(int n)
 
 	std::vector<std::vector<int>> buffer;
 
-	buffer.push_back({ 0, 0 });
-	buffer.push_back({ 512, 0 });
-	buffer.push_back({ 0, 512 });
-	buffer.push_back({ 512, 512 });
-
+	// Build a buffer list
 	for (int i = 0; i < n; i++)
 	{
 		std::vector<int> xy = { rand() % 512, rand() % 512 };
 		buffer.push_back(xy);
 	}
 
+	// Sort it lexicographically; we need this step
 	std::sort(buffer.begin(), buffer.end());
 	buffer.erase(std::unique(buffer.begin(), buffer.end()), buffer.end());
 
+	// Turn it into Verts for the convenience of our algorithm
 	for (int i = 0; i < buffer.size(); i++)
 	{
 		vertices_.push_back(new Vert(buffer[i][0], buffer[i][1]));
@@ -376,7 +390,7 @@ QuadList Delaunay::GetTriangulation()
 	return edges_;
 }
 
-void Delaunay::GetVoronoi()
+QuadList Delaunay::GetVoronoi()
 {
 	for (auto i = edges_.begin(); i != edges_.end(); i++)
 	{
@@ -390,6 +404,49 @@ void Delaunay::GetVoronoi()
 			e[3].setOrigin(Circumcenter(e[0].origin(), e[0].Oprev()->destination(), e[0].destination()));
 		}
 	}
+
+	return edges_;
+}
+
+EdgeList Delaunay::GetMST()
+{
+	// Okay, so we're not weighting it right now
+	// I can't really think of a reason to
+	EdgeList mst;
+	PointsList queue;
+	std::map<Vert*, int> distance;
+
+	for (auto i = vertices_.begin(); i != vertices_.end(); i++)
+	{
+		distance[*i] = -1;
+	}
+
+	// So we just do a depth-first search on the linked list
+	Vert* root = vertices_[0];
+	queue.push_back(root);
+	distance[root] = 0;
+
+	while (queue.size() > 0)
+	{
+		Vert* current = queue.back();
+		queue.pop_back();
+
+		// Check out my syntax skills
+		for (Edge* e = current->edge(); e != current->edge()->Oprev(); e = e->Onext())
+		{
+			Vert* dest = e->destination();
+			if (distance[dest] == -1)
+			{
+				distance[dest] = distance[current] + 1;
+				queue.push_back(dest);
+				mst.push_back(e);
+			}
+		}
+	} 
+
+
+
+	return mst;
 }
 
 //	--------------------------------------------------------

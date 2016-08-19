@@ -6,9 +6,11 @@
 #include <iostream>
 #include <chrono>
 
+bool DRAW_DELAUNAY = false;
 bool DRAW_VORONOI = false;
+bool DRAW_MST = false;
 
-void DrawEdge(Edge* e, sf::RenderWindow& window)
+void DrawEdge(Edge* e, sf::RenderWindow& window, const sf::Color& color)
 {
 	Edge* sym = e->Sym();
 	Vert* destination = e->destination();
@@ -18,7 +20,9 @@ void DrawEdge(Edge* e, sf::RenderWindow& window)
 	sf::VertexArray v(sf::Lines, 2);
 
 	v[0].position = sf::Vector2f(org.x(), org.y());
+	v[0].color = color;
 	v[1].position = sf::Vector2f(dest.x(), dest.y());
+	v[1].color = color;
 
 	window.draw(v);
 }
@@ -38,7 +42,7 @@ void DrawVoronoi(Edge* e, sf::RenderWindow& window)
 	window.draw(v);
 }
 
-void Render(QuadList& quads)
+void Render(QuadList& quads, EdgeList& mst)
 {
 	// Build the remdering environment
 	sf::RenderWindow window(sf::VideoMode(512, 512), "Delaunay Triangulator");
@@ -60,14 +64,22 @@ void Render(QuadList& quads)
 
 		for (auto i = quads.begin(); i != quads.end(); ++i)
 		{
-			if ((*i)->edges[0].draw)
+			if (DRAW_DELAUNAY && (*i)->edges[0].draw)
 			{
-				DrawEdge((*i)->edges, window);
+				DrawEdge((*i)->edges, window, sf::Color::White);
 			}
 			if (DRAW_VORONOI && (*i)->edges[1].draw)
 			{
 				DrawVoronoi((*i)->edges, window);
-			}	
+			}
+		}
+
+		for (auto i = mst.begin(); i != mst.end(); ++i)
+		{
+			if (DRAW_MST && (*i)->draw)
+			{
+				DrawEdge((*i), window, sf::Color::Red);
+			}
 		}
 
 		window.display();
@@ -76,28 +88,43 @@ void Render(QuadList& quads)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	int n;
+	char yn;
 
 	// Get number of vertices to triangulate
 	std::cout << "Enter number of vertices to triangulate:" << std::endl;
-	int n;
 	std::cin >> n;
-	std::cout << "Draw Voronoi diagram as well?" << std::endl;
-	char yn;
+
+	std::cout << "Draw Delaunay triangulation?" << std::endl;
+	std::cin >> yn;
+	if (yn == 'y' || yn == 'Y')
+	{
+		DRAW_DELAUNAY = true;
+	}
+
+	std::cout << "Draw Voronoi diagram?" << std::endl;
 	std::cin >> yn;
 	if (yn == 'y' || yn == 'Y')
 	{
 		DRAW_VORONOI = true;
 	}
+	std::cout << "Draw the spanning tree?" << std::endl;
+	std::cin >> yn;
+	if (yn == 'y' || yn == 'Y')
+	{
+		DRAW_MST = true;
+	}
 
 	auto t1 = std::chrono::high_resolution_clock::now();
 	Delaunay del(n);
-	QuadList quads = del.GetTriangulation();
-	del.GetVoronoi();
+	del.GetTriangulation();
+	QuadList quads = del.GetVoronoi();
+	EdgeList mst = del.GetMST();
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Running time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << std::endl;
 
-	Render(quads);
+	Render(quads, mst);
 
 	return 0;
 }
