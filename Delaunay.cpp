@@ -25,19 +25,17 @@ void DrawEdge(Edge* e, sf::RenderWindow& window)
 
 void DrawVoronoi(Edge* e, sf::RenderWindow& window)
 {
-	// Render the voronoi diagram as well
-	if (CCW(e[0].origin(), e[0].destination(), e[0].Onext()->destination())
-		&& CCW(e[0].origin(), e[0].Oprev()->destination(), e[0].destination()))
-	{
-		sf::VertexArray v(sf::Lines, 2);
+	sf::VertexArray v(sf::Lines, 2);
 
-		v[0].position = Circumcenter(e[0].origin(), e[0].destination(), e[0].Oprev()->destination());
-		v[0].color = sf::Color::Green;
-		v[1].position = Circumcenter(e[0].origin(), e[0].destination(), e[0].Onext()->destination());
-		v[1].color = sf::Color::Green;
+	Vert* org = e[1].origin();
+	Vert* dest = e[3].origin();
 
-		window.draw(v);
-	}
+	v[0].position = sf::Vector2f(org->x(), org->y());
+	v[0].color = sf::Color::Green;
+	v[1].position = sf::Vector2f(dest->x(), dest->y());
+	v[1].color = sf::Color::Green;
+
+	window.draw(v);
 }
 
 void Render(QuadList& quads)
@@ -46,7 +44,6 @@ void Render(QuadList& quads)
 	sf::RenderWindow window(sf::VideoMode(512, 512), "Delaunay Triangulator");
 
 	// Turn the vertices into something we want to render
-	// Shoot, I should make them more lightweight in the algorithm
 	std::vector<std::tuple<sf::Vector2f, sf::Vector2f>> quads_debug;
 	for (int i = 0; i < quads.size(); i++)
 	{
@@ -67,7 +64,7 @@ void Render(QuadList& quads)
 			{
 				DrawEdge((*i)->edges, window);
 			}
-			if (DRAW_VORONOI)
+			if (DRAW_VORONOI && (*i)->edges[1].draw)
 			{
 				DrawVoronoi((*i)->edges, window);
 			}	
@@ -93,7 +90,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	auto t1 = std::chrono::high_resolution_clock::now();
-	QuadList quads = Delaunay(n).GetTriangulation();
+	Delaunay del(n);
+	QuadList quads = del.GetTriangulation();
+	del.GetVoronoi();
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Running time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << std::endl;

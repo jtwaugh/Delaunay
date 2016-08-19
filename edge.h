@@ -35,11 +35,11 @@ class Vert //: public sf::Vertex
 {
 private:
 	Edge*												edge_;
-	int													x_;
-	int													y_;
+	float												x_;
+	float												y_;
 public:
 	//Vert(float x, float y);
-	Vert(int x, int y);
+	Vert(float x, float y);
 
 	Edge*												edge()									{ return edge_; };
 	void												AddEdge(Edge* edge)						{ edge_ = edge; };
@@ -66,7 +66,7 @@ Vert::Vert(float x, float y)
 }
 */
 
-Vert::Vert(int x, int y) : x_(x), y_(y)
+Vert::Vert(float x, float y) : x_(x), y_(y)
 {
 
 }
@@ -113,12 +113,13 @@ public:
 
 	// Accessors and mutators
 
-	Vert* origin()									{ return origin_; };
-	Vert* destination()								{ return Sym()->origin(); };
+	Vert* origin()										{ return origin_; };
+	Vert* destination()									{ return Sym()->origin(); };
 		
 	void setNext(Edge* next)							{ next_ = next; };
 	void setIndex(int index)							{ index_ = index; };
 	void setOrigin(Vert* org);
+	void setOrigin(sf::Vector2f org);
 	void setDestination(Vert* dest);
 
 	// Uses raw pointer because it's returning the array member of a QuadEdge
@@ -164,6 +165,13 @@ void Edge::setOrigin(Vert* origin)
 {
 	origin->AddEdge(this);
 	origin_ = origin;
+	draw = true;
+}
+
+void Edge::setOrigin(sf::Vector2f origin)
+{
+	origin_ = new Vert(origin.x, origin.y);
+	origin_->AddEdge(this);
 	draw = true;
 }
 

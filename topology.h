@@ -63,6 +63,7 @@ public:
 	Delaunay(int n);
 
 	QuadList								GetTriangulation();
+	void									GetVoronoi();
 };
 
 //	--------------------------------------------------------
@@ -373,6 +374,22 @@ QuadList Delaunay::GetTriangulation()
 	// This should make it less confusing to call Triangulate with the right vertex list
 	EdgePartition tuple = Triangulate(vertices_);
 	return edges_;
+}
+
+void Delaunay::GetVoronoi()
+{
+	for (auto i = edges_.begin(); i != edges_.end(); i++)
+	{
+		Edge* e = (*i)->edges;
+
+		// If we're not on the exterior
+		if (CCW(e[0].origin(), e[0].destination(), e[0].Onext()->destination())
+			&& CCW(e[0].origin(), e[0].Oprev()->destination(), e[0].destination()))
+		{
+			e[1].setOrigin(Circumcenter(e[0].origin(), e[0].destination(), e[0].Onext()->destination()));
+			e[3].setOrigin(Circumcenter(e[0].origin(), e[0].Oprev()->destination(), e[0].destination()));
+		}
+	}
 }
 
 //	--------------------------------------------------------
